@@ -1,15 +1,20 @@
 local RunService = game:GetService("RunService");
 local Player = game:GetService("Players");
+local TweenService = game:GetService("TweenService");
 
 local Heartbeat = RunService.Heartbeat;
 
 local JClouds = {};
 JClouds.__index = JClouds;
+local Clouds = {};
 
 local Cloud = {};
 Cloud.__index = Cloud;
 
-local Clouds = {};
+function Cloud:Destroy()
+    self = nil;
+end
+
 
 local Character = Player.Character or Player.CharacterAdded:Wait();
 
@@ -38,7 +43,11 @@ end
 local function generateObject()
     local Object;
 
-    Object = Instance.new("Part")
+    Object = Instance.new("Part");
+    Object.Size = Vector3.new(5,2, 5);
+    Object.Massless = true;
+    Object.CanCollide = false;
+    Object.Anchored = true;
 
     return Object;
 end
@@ -67,6 +76,16 @@ function JClouds:Connection(deltaTime : number)
         self:updatePosition(deltaTime);
     end
 
+    for _, Cloud in ipairs(Clouds) do
+        if not Clouds.Appeared then
+            Cloud.Position = Vector3.new(RootPart.Position.X, Cloud.Height, RootPart.Position.Z);
+
+            TweenService:Create(Cloud.Object, TweenInfo.new(1), {Transparency = Cloud.defaultTransparency}):Play();
+
+            Cloud.Appeared = true;
+        end
+    end
+
     self:updateTransparency();
 end
 
@@ -79,8 +98,10 @@ function JClouds:GenerateClouds(Amount : IntValue)
         local Object = generateObject();
 
         local Cloud = setmetatable(Cloud, {
-            defaultTransparency = 0.6,
-            Lifetime = 5,
+            Height = self.defaultHeight + math.random(-self.heightRandomDifference, self.heightRandomDifference),
+            defaultTransparency = 0.2,
+            Lifetime = 10,
+            appearanceTime = 0,
             Object = generateObject(),
             Appeared = false,
         });
@@ -94,6 +115,8 @@ function JClouds.new(...)
 
 
 	local Object = setmetatable(JClouds, {
+        defaultHeight = Args.defaultHeight or 50,
+        heightRandomDifference = Args.heightRandomDifference or 1,
         Speed = Args.Speed or 1,
         generationSpeed = Args.generationSpeed or 1,
         Range = Args.Range or 500,
