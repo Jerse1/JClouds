@@ -48,6 +48,7 @@ local function generateObject()
     Object.Massless = true;
     Object.CanCollide = false;
     Object.Anchored = true;
+    Object.Transparency = 1;
 
     return Object;
 end
@@ -79,6 +80,7 @@ function JClouds:Connection(deltaTime : number)
     for _, Cloud in ipairs(Clouds) do
         if not Clouds.Appeared then
             Cloud.Position = Vector3.new(RootPart.Position.X, Cloud.Height, RootPart.Position.Z);
+            Cloud.Parent = self.Folder;
 
             TweenService:Create(Cloud.Object, TweenInfo.new(1), {Transparency = Cloud.defaultTransparency}):Play();
 
@@ -90,6 +92,14 @@ function JClouds:Connection(deltaTime : number)
 end
 
 function JClouds:Start()
+    local Folder = Instance.new("Folder");
+    Folder.Name = "Clouds";
+    Folder.Parent = workspace;
+
+    self.Folder = Folder;
+
+    self:GenerateClouds(50);
+
 	Heartbeat:Connect(JClouds.Connection);
 end
 
